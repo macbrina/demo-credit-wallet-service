@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import User from "@/models/userModel";
 import UserWallet from "@/models/walletModel";
 import bcrypt from "bcrypt";
@@ -10,80 +10,79 @@ import {
   checkUserKarma,
   validateUserLoginInput,
 } from "@/utils/validation";
+import { CustomError } from "@/errors/customError";
 
 class UserController {
-  static async createUser(req: Request, res: Response) {
+  static async createUser(req: Request, res: Response, next: NextFunction) {
     const userData = req.body;
-
-    if (!userData || typeof userData !== "object") {
-      return res.status(400).json({ message: "Invalid request body" });
-    }
 
     const errors = await validateUserCreationInput(userData);
 
     if (errors.length > 0) {
-      return res.status(400).json({ errors });
+      return next(new CustomError("Validation errors occurred", 400, errors));
     }
-
-    const trx = await db.transaction();
 
     try {
       const userKarma = await checkUserKarma(userData.email);
 
       if (userKarma) {
-        return res
-          .status(403)
-          .json({ message: "Access denied: Insufficient karma score" });
+        return next(
+          new CustomError("Access denied: Insufficient karma score", 403)
+        );
       }
 
-      const newUserId = await User.createUser(userData, trx);
+      const { wallet_pin, ...userWithoutPin } = userData;
 
-      const walletId = await UserWallet.generateUniqueWalletId();
+      await db.transaction(async (trx) => {
+        const newUserId = await User.createUser(userWithoutPin, trx);
 
-      const newWallet = {
-        user_id: newUserId,
-        wallet_id: walletId,
-      };
+        const walletId = await UserWallet.generateUniqueWalletId();
 
-      await UserWallet.createUserWallet(newWallet, trx);
-      await trx.commit();
-      res.status(201).json({ message: "User created successfully" });
+        const newWallet = {
+          user_id: newUserId,
+          wallet_id: walletId,
+          wallet_pin: userData.wallet_pin,
+        };
+
+        await UserWallet.createUserWallet(newWallet, trx);
+        res
+          .status(201)
+          .json({ message: "User created successfully", walletId: walletId });
+      });
     } catch (error) {
-      await trx.rollback();
       logger.error(
         (error as Error).message || "Error in user creation process"
       );
-      res
-        .status(500)
-        .json({ message: "An error occurred during user creation" });
+
+      if (error instanceof CustomError) {
+        return next(error);
+      }
+
+      next(new CustomError("Internal server error", 500));
     }
   }
 
-  static async loginUser(req: Request, res: Response) {
+  static async loginUser(req: Request, res: Response, next: NextFunction) {
     const userData = req.body;
-
-    if (!userData || typeof userData !== "object") {
-      return res.status(400).json({ message: "Invalid request body" });
-    }
 
     const errors = validateUserLoginInput(userData);
 
     if (errors.length > 0) {
-      return res.status(400).json({ errors });
+      return next(new CustomError("Validation errors occurred", 400, errors));
     }
 
     try {
       const userKarma = await checkUserKarma(userData.email);
 
       if (userKarma) {
-        return res
-          .status(403)
-          .json({ message: "Access denied: Insufficient karma score" });
+        return next(
+          new CustomError("Access denied: Insufficient karma score", 403)
+        );
       }
 
       const existingUser = await User.findUserByEmail(userData.email);
       if (!existingUser) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return next(new CustomError("Invalid email or password", 401));
       }
 
       const passwordMatch = await bcrypt.compare(
@@ -92,7 +91,7 @@ class UserController {
       );
 
       if (!passwordMatch) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return next(new CustomError("Invalid email or password", 401));
       }
 
       const token = jwt.sign(
@@ -103,7 +102,12 @@ class UserController {
       return res.status(200).json({ token });
     } catch (error) {
       logger.error((error as Error).message || "Error in user login process");
-      res.status(500).json({ message: "An error occurred during user login" });
+
+      if (error instanceof CustomError) {
+        return next(error);
+      }
+
+      next(new CustomError("Internal server error", 500));
     }
   }
 }

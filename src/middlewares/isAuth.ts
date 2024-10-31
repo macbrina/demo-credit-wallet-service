@@ -1,5 +1,5 @@
-import jwt from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
+import jwt from "jsonwebtoken";
 
 interface CustomJwtPayload extends jwt.JwtPayload {
   userId: string;

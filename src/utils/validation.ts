@@ -1,39 +1,32 @@
 import User from "@/models/userModel";
+import UserWallet from "@/models/walletModel";
 import axios from "axios";
+import bcrypt from "bcrypt";
 import logger from "./logger";
+import {
+  userLoginSchema,
+  userSignupSchema,
+  userWalletSchema,
+} from "./validationSchemas";
 
 export const validateUserCreationInput = async (
   userData: any
 ): Promise<string[]> => {
   const errors: string[] = [];
 
-  if (!userData.name || typeof userData.name !== "string") {
-    errors.push("Name is required and should be a string");
+  const { error } = userSignupSchema.validate(userData);
+  if (error) {
+    errors.push(...error.details.map((detail) => detail.message));
   }
 
-  if (
-    !userData.email ||
-    typeof userData.email !== "string" ||
-    !validateEmail(userData.email)
-  ) {
-    errors.push("Email is required and should be a valid email address");
-  } else {
+  try {
     const existingUser = await User.findUserByEmail(userData.email);
     if (existingUser) {
       errors.push("User already exists with this email.");
       return errors;
     }
-  }
-
-  if (!userData.phone_number || typeof userData.phone_number !== "string") {
-    errors.push("Phone number is required and should be a valid phone number");
-  }
-
-  if (!userData.password || typeof userData.password !== "string") {
-    errors.push("Password is required and should be a string");
-  } else {
-    const passwordErrors = validatePassword(userData.password);
-    errors.push(...passwordErrors);
+  } catch (error) {
+    logger.error("Error validating email", error);
   }
 
   return errors;
@@ -42,50 +35,14 @@ export const validateUserCreationInput = async (
 export const validateUserLoginInput = (userData: any) => {
   const errors: string[] = [];
 
-  if (
-    !userData.email ||
-    typeof userData.email !== "string" ||
-    !validateEmail(userData.email)
-  ) {
-    errors.push("Email is required and should be a valid email address");
-  }
+  const { error } = userLoginSchema.validate(userData);
 
-  if (!userData.password || typeof userData.password !== "string") {
-    errors.push("Password is required");
+  if (error) {
+    errors.push(...error.details.map((detail) => detail.message));
+    return errors;
   }
 
   return errors;
-};
-
-export const validatePassword = (password: string): string[] => {
-  const errors: string[] = [];
-
-  if (password.length < 8) {
-    errors.push("Password must be at least 8 characters long");
-  }
-
-  if (!/[A-Z]/.test(password)) {
-    errors.push("Password must contain at least one uppercase letter");
-  }
-
-  if (!/[a-z]/.test(password)) {
-    errors.push("Password must contain at least one lowercase letter");
-  }
-
-  if (!/[0-9]/.test(password)) {
-    errors.push("Password must contain at least one number");
-  }
-
-  if (!/[!@#$%^&*]/.test(password)) {
-    errors.push("Password must contain at least one special character");
-  }
-
-  return errors;
-};
-
-export const validateEmail = (email: string): boolean => {
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return regex.test(email);
 };
 
 export const checkUserKarma = async (email: string): Promise<boolean> => {
@@ -104,11 +61,48 @@ export const checkUserKarma = async (email: string): Promise<boolean> => {
     return !!data?.data?.karma_identity;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 404) {
-      logger.warn("Identity not found in karma ecosystem");
       return false;
     }
 
     logger.error((error as Error).message || "Error checking user karma");
     throw new Error("Error checking user karma");
   }
+};
+
+export const validateWalletCredentials = async (
+  walletData: any
+): Promise<string[]> => {
+  const errors: string[] = [];
+
+  const { error } = userWalletSchema.validate(walletData);
+
+  if (error) {
+    errors.push(...error.details.map((detail) => detail.message));
+    return errors;
+  }
+
+  try {
+    const walletExists = await UserWallet.findUserWalletById(
+      walletData.wallet_id
+    );
+    if (!walletExists) {
+      errors.push("Invalid wallet ID");
+      return errors;
+    }
+
+    const passwordMatch = await bcrypt.compare(
+      walletData.wallet_pin,
+      walletExists.wallet_pin
+    );
+
+    if (!passwordMatch) {
+      errors.push("Incorrect wallet PIN");
+      return errors;
+    }
+  } catch (error) {
+    logger.error((error as Error).message || "Error validating wallet ID");
+    throw new Error("Error validating wallet ID: " + (error as Error).message);
+  }
+
+  return errors;
 };
