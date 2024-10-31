@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
 import User from "@/models/userModel";
+import UserWallet from "@/models/walletModel";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import logger from "@/utils/logger";
+import db from "../../db";
 import {
   validateUserCreationInput,
   checkUserKarma,
@@ -23,6 +25,8 @@ class UserController {
       return res.status(400).json({ errors });
     }
 
+    const trx = await db.transaction();
+
     try {
       const userKarma = await checkUserKarma(userData.email);
 
@@ -32,9 +36,20 @@ class UserController {
           .json({ message: "Access denied: Insufficient karma score" });
       }
 
-      await User.createUser(userData);
+      const newUserId = await User.createUser(userData, trx);
+
+      const walletId = await UserWallet.generateUniqueWalletId();
+
+      const newWallet = {
+        user_id: newUserId,
+        wallet_id: walletId,
+      };
+
+      await UserWallet.createUserWallet(newWallet, trx);
+      await trx.commit();
       res.status(201).json({ message: "User created successfully" });
     } catch (error) {
+      await trx.rollback();
       logger.error(
         (error as Error).message || "Error in user creation process"
       );
@@ -81,7 +96,7 @@ class UserController {
       }
 
       const token = jwt.sign(
-        { userId: existingUser.user_id },
+        { userId: existingUser.id },
         process.env.JWT_SECRET_KEY!,
         { expiresIn: "1h" }
       );

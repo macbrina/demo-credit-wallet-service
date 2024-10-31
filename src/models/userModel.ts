@@ -1,8 +1,9 @@
+import { Knex } from "knex";
 import db from "../../db";
 import bcrypt from "bcrypt";
 
 interface UserData {
-  user_id?: number;
+  id?: number;
   name: string;
   email: string;
   password: string;
@@ -12,7 +13,7 @@ interface UserData {
 }
 
 class User {
-  user_id?: number;
+  id?: number;
   name: string;
   email: string;
   password: string;
@@ -21,7 +22,7 @@ class User {
   updated_at?: Date;
 
   constructor({
-    user_id,
+    id,
     name,
     email,
     password,
@@ -29,7 +30,7 @@ class User {
     created_at,
     updated_at,
   }: UserData) {
-    this.user_id = user_id;
+    this.id = id;
     this.name = name;
     this.email = email;
     this.password = password;
@@ -38,17 +39,22 @@ class User {
     this.updated_at = updated_at;
   }
 
-  static async createUser(userData: UserData): Promise<number> {
+  static async createUser(
+    userData: UserData,
+    trx: Knex.Transaction
+  ): Promise<number> {
     const hashedPassword = await bcrypt.hash(userData.password, 10);
-    const [newUserId] = await db("users").insert({
+    const [newUserId] = await trx("users").insert({
       ...userData,
       password: hashedPassword,
     });
-    return newUserId;
+
+    const user = await trx("users").select("id").where("id", newUserId).first();
+    return user.id;
   }
 
   static async findUserById(id: number): Promise<User | null> {
-    const user = await db<UserData>("users").where({ user_id: id }).first();
+    const user = await db<UserData>("users").where({ id }).first();
     return user ? new User(user) : null;
   }
 

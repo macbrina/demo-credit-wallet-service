@@ -104,9 +104,7 @@ export const checkUserKarma = async (email: string): Promise<boolean> => {
     return !!data?.data?.karma_identity;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 404) {
-      logger.warn(
-        (error as Error).message || "Identity not found in karma ecosystem"
-      );
+      logger.warn("Identity not found in karma ecosystem");
       return false;
     }
 
