@@ -45,10 +45,12 @@ export const validateUserLoginInput = (userData: any) => {
   return errors;
 };
 
-export const checkUserKarma = async (email: string): Promise<boolean> => {
+export const checkUserKarma = async (identity: string): Promise<boolean> => {
   try {
     const response = await axios.get(
-      `${process.env.LENDSQR_API_URL}/verification/karma/${email}`,
+      `${process.env.LENDSQR_API_URL}/verification/karma/${encodeURIComponent(
+        identity
+      )}`,
       {
         headers: {
           Authorization: `Bearer ${process.env.LENDSQR_SECRET_KEY}`,

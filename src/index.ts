@@ -8,14 +8,15 @@ import walletRoutes from "@/routes/walletRoutes";
 import transactionRoutes from "@/routes/transactionRoutes";
 import bodyParser from "body-parser";
 import express from "express";
+import { Server } from "http";
 
 const app = express();
 
 app.use(bodyParser.json());
 
-app.use(isAuth);
-
 app.use("/api/users", userRoutes);
+
+app.use(isAuth);
 app.use("/api/wallets", walletRoutes);
 app.use("/api/transactions", transactionRoutes);
 
@@ -28,4 +29,9 @@ app.use(
   }
 );
 
-app.listen(process.env.PORT || 3000);
+const PORT = process.env.PORT || 3000;
+if (process.env.NODE_ENV !== "test") {
+  app.listen(PORT);
+}
+
+export default app;

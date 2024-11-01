@@ -65,7 +65,7 @@ class TransactionController {
 
       res.status(200).json({ data: userTransactions });
     } catch (error) {
-      this.handleError(error, next);
+      return this.handleError(error, next);
     }
   }
 
@@ -130,7 +130,7 @@ class TransactionController {
 
       res.status(200).json({ data: responseData });
     } catch (error) {
-      this.handleError(error, next);
+      return this.handleError(error, next);
     }
   }
 

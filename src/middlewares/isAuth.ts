@@ -9,7 +9,7 @@ const isAuth = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.header("Authorization");
 
   if (!authHeader) {
-    req.isAuth = true;
+    req.isAuth = false;
     return next();
   }
 

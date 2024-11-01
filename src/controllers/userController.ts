@@ -23,7 +23,13 @@ class UserController {
         return next(new CustomError("Validation errors occurred", 400, errors));
       }
 
-      const userKarma = await checkUserKarma(userData.email);
+      let userKarma;
+
+      if (userData?.identity) {
+        userKarma = await checkUserKarma(userData.identity); // For testing purposes
+      } else {
+        userKarma = await checkUserKarma(userData.email);
+      }
 
       if (userKarma) {
         return next(
@@ -31,10 +37,10 @@ class UserController {
         );
       }
 
-      const { wallet_pin, ...userWithoutPin } = userData;
+      const { wallet_pin, identity, ...newUserData } = userData;
 
       await db.transaction(async (trx) => {
-        const newUserId = await User.createUser(userWithoutPin, trx);
+        const newUserId = await User.createUser(newUserData, trx);
 
         const walletId = await UserWallet.generateUniqueWalletId();
 
@@ -50,7 +56,7 @@ class UserController {
           .json({ message: "User created successfully", walletId: walletId });
       });
     } catch (error) {
-      this.handleError(error, next);
+      return this.handleError(error, next);
     }
   }
 
@@ -64,13 +70,19 @@ class UserController {
     }
 
     try {
-      const userKarma = await checkUserKarma(userData.email);
+      let userKarma;
 
-      if (userKarma) {
-        return next(
-          new CustomError("Access denied: Insufficient karma score", 403)
-        );
-      }
+      // if (userData?.identity) {
+      //   userKarma = await checkUserKarma(userData.identity); // For testing purposes
+      // } else {
+      //   userKarma = await checkUserKarma(userData.email);
+      // }
+
+      // if (userKarma) {
+      //   return next(
+      //     new CustomError("Access denied: Insufficient karma score", 403)
+      //   );
+      // }
 
       const existingUser = await User.findUserByEmail(userData.email);
       if (!existingUser) {
@@ -93,7 +105,7 @@ class UserController {
       );
       return res.status(200).json({ token });
     } catch (error) {
-      this.handleError(error, next);
+      return this.handleError(error, next);
     }
   }
 

@@ -31,6 +31,8 @@ export const userSignupSchema = Joi.object({
       "string.pattern.name":
         "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.",
     }),
+
+  identity: Joi.string(),
 });
 
 export const userLoginSchema = Joi.object({
@@ -41,6 +43,7 @@ export const userLoginSchema = Joi.object({
   password: Joi.string().required().messages({
     "any.required": "Password is required",
   }),
+  identity: Joi.string(),
 });
 
 export const userWalletSchema = Joi.object({
@@ -48,10 +51,10 @@ export const userWalletSchema = Joi.object({
     "any.required": "Wallet ID is required",
     "number.base": "Wallet ID must be a number",
   }),
-  amount: Joi.number().min(10).max(1000000).required().messages({
+  amount: Joi.number().min(1).max(1000000).required().messages({
     "any.required": "Amount is required",
     "number.base": "Amount must be a number",
-    "number.min": "Amount must be at least N10",
+    "number.min": "Amount must be at least N1",
     "number.max": "Amount must not exceed N1,000,000",
   }),
   wallet_pin: Joi.string().length(4).pattern(/^\d+$/).required().messages({

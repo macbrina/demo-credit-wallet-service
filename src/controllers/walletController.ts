@@ -38,7 +38,14 @@ class WalletController {
     const walletData = req.body;
 
     try {
-      await this.validateWalletData(walletData, walletId, next);
+      const errors = await validateWalletCredentials({
+        ...walletData,
+        wallet_id: walletId,
+      });
+
+      if (errors.length > 0) {
+        return next(new CustomError("Validation errors occurred", 400, errors));
+      }
 
       await db.transaction(async (trx) => {
         const updatedWallet = await UserWallet.updateUserWalletBalance(
@@ -71,10 +78,12 @@ class WalletController {
                 transactionData
               )
             );
+        } else {
+          res.status(400).json({ message: "Wallet update failed." });
         }
       });
     } catch (error) {
-      this.handleError(error, next);
+      return this.handleError(error, next);
     }
   }
 
@@ -85,7 +94,14 @@ class WalletController {
     const walletData = req.body;
 
     try {
-      await this.validateWalletData(walletData, recipientWalletId, next);
+      const errors = await validateWalletCredentials({
+        ...walletData,
+        wallet_id: recipientWalletId,
+      });
+
+      if (errors.length > 0) {
+        return next(new CustomError("Validation errors occurred", 400, errors));
+      }
 
       const [senderWalletInfo, recipientWalletInfo] = await Promise.all([
         UserWallet.getUserWalletInfo(undefined, Number(req.userId)),
@@ -141,10 +157,12 @@ class WalletController {
             transaction_date: format(createdAtDate, "yyyy-MM-dd HH:mm:ss"),
             transactiion_status: transactionData.status,
           });
+        } else {
+          res.status(400).json({ message: "Wallet update failed." });
         }
       });
     } catch (error) {
-      this.handleError(error, next);
+      return this.handleError(error, next);
     }
   }
 
@@ -155,7 +173,14 @@ class WalletController {
     const walletData = req.body;
 
     try {
-      await this.validateWalletData(walletData, walletId, next);
+      const errors = await validateWalletCredentials({
+        ...walletData,
+        wallet_id: walletId,
+      });
+
+      if (errors.length > 0) {
+        return next(new CustomError("Validation errors occurred", 400, errors));
+      }
 
       const userWalletInfo = await UserWallet.getUserWalletInfo(walletId);
 
@@ -165,14 +190,11 @@ class WalletController {
 
       await db.transaction(async (trx) => {
         if (!isBalanceSufficient(userWalletInfo.balance, walletData.amount)) {
-          const transactionData = await UserTransaction.createTransaction(
-            {
-              wallet_id: walletId,
-              transaction_id: `TXN` + generateRandomNumber(15),
-              amount: walletData.amount,
-              transaction_type: "withdrawal",
-              status: "failed",
-            },
+          const transactionData = await this.createTransactionRecord(
+            walletId,
+            walletData.amount,
+            "withdrawal",
+            "failed",
             trx
           );
 
@@ -220,10 +242,12 @@ class WalletController {
                 transactionData
               )
             );
+        } else {
+          res.status(400).json({ message: "Wallet update failed." });
         }
       });
     } catch (error) {
-      this.handleError(error, next);
+      return this.handleError(error, next);
     }
   }
 
@@ -282,20 +306,6 @@ class WalletController {
       },
       trx
     );
-  }
-
-  static async validateWalletData(
-    walletData: any,
-    walletId: number,
-    next: NextFunction
-  ) {
-    const errors = await validateWalletCredentials({
-      ...walletData,
-      wallet_id: walletId,
-    });
-    if (errors.length > 0) {
-      return next(new CustomError("Validation errors occurred", 400, errors));
-    }
   }
 
   static checkAuth(req: Request, next: NextFunction): boolean {

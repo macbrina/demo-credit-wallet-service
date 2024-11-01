@@ -5,7 +5,7 @@ import UserController from "@/controllers/userController";
 const router = Router();
 
 router.post(
-  "/create-user",
+  "/register-user",
   async (req: Request, res: Response, next: NextFunction) => {
     await UserController.createUser(req, res, next);
   }
