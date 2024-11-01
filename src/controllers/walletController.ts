@@ -1,20 +1,20 @@
+import { CustomError } from "@/errors/customError";
 import UserTransaction, {
   transactionStatus,
   transactionType,
 } from "@/models/transactionModel";
 import UserWallet from "@/models/walletModel";
+import { generateRandomNumber, isBalanceSufficient } from "@/utils/helper";
 import logger from "@/utils/logger";
 import { validateWalletCredentials } from "@/utils/validation";
-import { NextFunction, Request, Response } from "express";
-import { CustomError } from "@/errors/customError";
-import { generateRandomNumber, isBalanceSufficient } from "@/utils/helper";
-import db from "../../db";
-import { Knex } from "knex";
 import { format } from "date-fns";
+import { NextFunction, Request, Response } from "express";
+import { Knex } from "knex";
+import db from "../../db";
 
 class WalletController {
   static async getUserBalance(req: Request, res: Response, next: NextFunction) {
-    this.checkAuth(req, next);
+    if (!this.checkAuth(req, next)) return;
 
     try {
       const userWalletInfo = await UserWallet.getUserWalletInfo(
@@ -32,7 +32,7 @@ class WalletController {
     }
   }
   static async depositFunds(req: Request, res: Response, next: NextFunction) {
-    this.checkAuth(req, next);
+    if (!this.checkAuth(req, next)) return;
 
     const walletId = Number(req.params.wallet_id);
     const walletData = req.body;
@@ -79,7 +79,7 @@ class WalletController {
   }
 
   static async transferFunds(req: Request, res: Response, next: NextFunction) {
-    this.checkAuth(req, next);
+    if (!this.checkAuth(req, next)) return;
 
     const recipientWalletId = Number(req.params.wallet_id);
     const walletData = req.body;
@@ -149,7 +149,7 @@ class WalletController {
   }
 
   static async withdrawFunds(req: Request, res: Response, next: NextFunction) {
-    this.checkAuth(req, next);
+    if (!this.checkAuth(req, next)) return;
 
     const walletId = Number(req.params.wallet_id);
     const walletData = req.body;
@@ -298,10 +298,13 @@ class WalletController {
     }
   }
 
-  static checkAuth(req: Request, next: NextFunction) {
+  static checkAuth(req: Request, next: NextFunction): boolean {
     if (!req.isAuth) {
-      return next(new CustomError("Unauthorized access", 401));
+      next(new CustomError("Unauthorized access", 401));
+      return false;
     }
+
+    return true;
   }
 
   static buildResponse(

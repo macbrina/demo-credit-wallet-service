@@ -69,7 +69,7 @@ class UserTransaction {
     }
   }
 
-  static async findTransactionById(
+  static async getTransactionById(
     transaction_id: string
   ): Promise<transactionData | null> {
     try {
@@ -80,6 +80,58 @@ class UserTransaction {
       return transaction ? transaction : null;
     } catch (error) {
       throw new Error("Failed to find transaction by ID.");
+    }
+  }
+
+  static async getAllTransactions(options?: {
+    where: any;
+    limit?: number;
+    order?: any[];
+    startDate?: Date;
+    endDate?: Date;
+  }): Promise<
+    | {
+        id: number;
+        transaction_id: string;
+        amount: number;
+        transaction_type: string;
+        status: string;
+        created_at: Date;
+      }[]
+    | null
+  > {
+    try {
+      const query = db<transactionData>("transactions").where(options?.where);
+
+      if (options?.startDate && options?.endDate) {
+        query.whereBetween("created_at", [options.startDate, options.endDate]);
+      } else if (options?.startDate) {
+        query.where("created_at", ">=", options.startDate);
+      } else if (options?.endDate) {
+        query.where("created_at", "<=", options.endDate);
+      }
+
+      if (options?.order) {
+        options.order.forEach((order) => {
+          query.orderBy(order[0], order[1]);
+        });
+      }
+
+      if (options?.limit) {
+        query.limit(options.limit);
+      }
+
+      const transactions = await query.select(
+        "id",
+        "transaction_id",
+        "amount",
+        "transaction_type",
+        "status",
+        "created_at"
+      );
+      return transactions.length > 0 ? transactions : null;
+    } catch (error) {
+      throw new Error("Failed to retrieve all transactions.");
     }
   }
 }
