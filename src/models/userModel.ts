@@ -43,24 +43,39 @@ class User {
     userData: UserData,
     trx: Knex.Transaction
   ): Promise<number> {
-    const hashedPassword = await bcrypt.hash(userData.password, 10);
-    const [newUserId] = await trx("users").insert({
-      ...userData,
-      password: hashedPassword,
-    });
+    try {
+      const hashedPassword = await bcrypt.hash(userData.password, 10);
+      const [newUserId] = await trx("users").insert({
+        ...userData,
+        password: hashedPassword,
+      });
 
-    const user = await trx("users").select("id").where("id", newUserId).first();
-    return user.id;
+      const user = await trx("users")
+        .select("id")
+        .where("id", newUserId)
+        .first();
+      return user.id;
+    } catch (error) {
+      throw new Error("Failed to create user.");
+    }
   }
 
   static async findUserById(id: number): Promise<User | null> {
-    const user = await db<UserData>("users").where({ id }).first();
-    return user ? new User(user) : null;
+    try {
+      const user = await db<UserData>("users").where({ id }).first();
+      return user ? new User(user) : null;
+    } catch (error) {
+      throw new Error("Failed to find user by ID.");
+    }
   }
 
   static async findUserByEmail(email: string): Promise<User | null> {
-    const user = await db<UserData>("users").where({ email }).first();
-    return user ? new User(user) : null;
+    try {
+      const user = await db<UserData>("users").where({ email }).first();
+      return user ? new User(user) : null;
+    } catch (error) {
+      throw new Error("Failed to find user by email.");
+    }
   }
 }
 

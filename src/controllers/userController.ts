@@ -16,13 +16,13 @@ class UserController {
   static async createUser(req: Request, res: Response, next: NextFunction) {
     const userData = req.body;
 
-    const errors = await validateUserCreationInput(userData);
-
-    if (errors.length > 0) {
-      return next(new CustomError("Validation errors occurred", 400, errors));
-    }
-
     try {
+      const errors = await validateUserCreationInput(userData);
+
+      if (errors.length > 0) {
+        return next(new CustomError("Validation errors occurred", 400, errors));
+      }
+
       const userKarma = await checkUserKarma(userData.email);
 
       if (userKarma) {
@@ -50,15 +50,7 @@ class UserController {
           .json({ message: "User created successfully", walletId: walletId });
       });
     } catch (error) {
-      logger.error(
-        (error as Error).message || "Error in user creation process"
-      );
-
-      if (error instanceof CustomError) {
-        return next(error);
-      }
-
-      next(new CustomError("Internal server error", 500));
+      this.handleError(error, next);
     }
   }
 
@@ -101,14 +93,24 @@ class UserController {
       );
       return res.status(200).json({ token });
     } catch (error) {
-      logger.error((error as Error).message || "Error in user login process");
-
-      if (error instanceof CustomError) {
-        return next(error);
-      }
-
-      next(new CustomError("Internal server error", 500));
+      this.handleError(error, next);
     }
+  }
+
+  static handleError(error: any, next: NextFunction) {
+    logger.error(
+      `${(error as Error).message || "Unknown error occurred"}\n${
+        (error as Error).stack || "No stack trace available"
+      }`
+    );
+
+    if (error instanceof CustomError) {
+      return next(error);
+    }
+
+    next(
+      new CustomError((error as Error).message || "Internal server error", 500)
+    );
   }
 }
 

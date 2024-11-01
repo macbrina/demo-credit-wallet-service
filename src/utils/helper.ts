@@ -8,3 +8,10 @@ export const generateRandomNumber = (numDigits: number): number => {
 
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
+
+export const isBalanceSufficient = (
+  available_balance: number,
+  amount: number
+): boolean => {
+  return available_balance >= amount;
+};

@@ -1,8 +1,8 @@
 import { Knex } from "knex";
 import db from "../../db";
 
-type transactionType = "deposit" | "withdrawal" | "transfer";
-type transactionStatus =
+export type transactionType = "deposit" | "withdrawal" | "transfer";
+export type transactionStatus =
   | "pending"
   | "failed"
   | "success"
@@ -54,23 +54,33 @@ class UserTransaction {
     transactionData: transactionData,
     trx: Knex.Transaction
   ): Promise<transactionData> {
-    const [transaction_id] = await trx("transactions").insert(transactionData);
-    const insertedTransaction = await trx("transactions")
-      .select("*")
-      .where("id", transaction_id)
-      .first();
+    try {
+      const [transaction_id] = await trx("transactions").insert(
+        transactionData
+      );
+      const insertedTransaction = await trx("transactions")
+        .select("*")
+        .where("id", transaction_id)
+        .first();
 
-    return insertedTransaction;
+      return insertedTransaction;
+    } catch (error) {
+      throw new Error("Failed to create transaction.");
+    }
   }
 
   static async findTransactionById(
     transaction_id: string
   ): Promise<transactionData | null> {
-    const transaction = await db<transactionData>("transactions")
-      .where(transaction_id)
-      .first();
+    try {
+      const transaction = await db<transactionData>("transactions")
+        .where({ transaction_id })
+        .first();
 
-    return transaction ? transaction : null;
+      return transaction ? transaction : null;
+    } catch (error) {
+      throw new Error("Failed to find transaction by ID.");
+    }
   }
 }
 
