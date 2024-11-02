@@ -109,7 +109,7 @@ To ensure the integrity of your codebase, this project uses Jest for unit testin
 
 The API endpoints for this service can be accessed at the following base URL:
 
-- Base API URL: http://localhost:3000/api
+- Base API URL: https://documenter.getpostman.com/view/29459580/2sAY4xA25n
 
 Here are some of the main endpoints:
 
