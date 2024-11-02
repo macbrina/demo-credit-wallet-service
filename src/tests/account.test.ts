@@ -3,10 +3,7 @@ import request from "supertest";
 import { closeServer, startServer } from "./testSetup";
 import { deleteTestUser } from "./userTestUtils";
 
-const generateUniqueEmail = () =>
-  `testuser_${Date.now()}_${Math.floor(Math.random() * 100000)}@gmail.com`;
-
-const testUserEmail: string = generateUniqueEmail();
+const testUserEmail: string = "sender@example.com";
 
 const testUserData = {
   email: testUserEmail,

@@ -12,7 +12,7 @@ beforeAll(async () => {
   await startServer();
 
   sender = await createTestUser();
-  receiver = await createTestUser();
+  receiver = await createTestUser(true);
 }, 15000);
 
 afterAll(async () => {

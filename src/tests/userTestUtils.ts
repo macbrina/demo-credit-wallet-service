@@ -10,17 +10,16 @@ export interface TestUser {
   transactionId: string;
 }
 
-let cachedSender: TestUser | null = null;
+export const createTestUser = async (
+  recipient?: boolean
+): Promise<TestUser> => {
+  let senderEmail: string;
 
-const generateUniqueEmail = () =>
-  `testuser_${Date.now()}_${Math.floor(Math.random() * 100000)}@gmail.com`;
-
-export const createTestUser = async (): Promise<TestUser> => {
-  if (cachedSender) {
-    return cachedSender;
+  if (recipient) {
+    senderEmail = "recipient@example.com";
+  } else {
+    senderEmail = "sender@example.com";
   }
-
-  const senderEmail = generateUniqueEmail();
 
   const senderData = {
     email: senderEmail,
@@ -56,15 +55,13 @@ export const createTestUser = async (): Promise<TestUser> => {
     throw new Error("Failed to create deposit transaction");
   }
 
-  cachedSender = {
+  return {
     email: senderEmail,
     walletId: senderWalletId,
     walletPin: senderData.wallet_pin,
     token: senderToken,
     transactionId: senderDepositResponse.body.data.transaction_id,
   };
-
-  return cachedSender;
 };
 
 export const deleteTestUser = async (email: string) => {
