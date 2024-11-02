@@ -31,7 +31,7 @@ describe("Withdraw Funds", () => {
       .send(withdrawData);
 
     expect(response.status).toBe(200);
-    expect(response.body.transaction_amount).toBe(withdrawAmount);
+    expect(response.body.data.transaction_amount).toBe(withdrawAmount);
   });
 
   it("should fail if balance is insufficient", async () => {

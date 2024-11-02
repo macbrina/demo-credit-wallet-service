@@ -31,8 +31,8 @@ describe("Transfer Funds", () => {
       .send(transferData);
 
     expect(response.status).toBe(200);
-    expect(response.body.transaction_amount).toBe(transferAmount);
-    expect(response.body.recipient_wallet_id).toBe(recipientWalletId);
+    expect(response.body.data.transaction_amount).toBe(transferAmount);
+    expect(response.body.data.recipient_wallet_id).toBe(recipientWalletId);
   });
 
   it("should fail if balance is insufficient", async () => {

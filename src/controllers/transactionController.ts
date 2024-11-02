@@ -63,7 +63,10 @@ class TransactionController {
         });
       }
 
-      res.status(200).json({ data: userTransactions });
+      res.status(200).json({
+        message: "Transactions retrieved successfully.",
+        data: userTransactions,
+      });
     } catch (error) {
       return this.handleError(error, next);
     }
@@ -128,7 +131,10 @@ class TransactionController {
         }),
       };
 
-      res.status(200).json({ data: responseData });
+      res.status(200).json({
+        message: "Transaction retrieved successfully.",
+        data: responseData,
+      });
     } catch (error) {
       return this.handleError(error, next);
     }

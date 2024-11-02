@@ -61,7 +61,7 @@ describe("Check Wallet Balance", () => {
       .get(`/api/wallets/${walletId}/balance`)
       .set("Authorization", `Bearer ${getToken()}`);
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty("balance");
+    expect(response.body.data).toHaveProperty("balance");
   });
 
   it("should fail if user is not logged in", async () => {

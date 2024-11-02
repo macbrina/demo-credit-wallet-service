@@ -8,7 +8,6 @@ import walletRoutes from "@/routes/walletRoutes";
 import transactionRoutes from "@/routes/transactionRoutes";
 import bodyParser from "body-parser";
 import express from "express";
-import { Server } from "http";
 
 const app = express();
 
@@ -25,7 +24,7 @@ app.use(
     const status = error.statusCode || 500;
     const message = error.message;
     const data = error.data;
-    res.status(status).json({ message: message, data: data });
+    res.status(status).json({ status, message: message, data: data });
   }
 );
 

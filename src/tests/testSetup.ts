@@ -13,11 +13,11 @@ export const startServer = async () => {
     const port = getRandomPort();
     server = app.listen(port);
 
-    const response = await request(app).post("/api/users/login-user").send({
+    const response = await request(app).post("/api/users/login").send({
       email: process.env.TEST_USER_EMAIL,
       password: process.env.TEST_USER_PASSWORD,
     });
-    token = response.body.token;
+    token = response.body.data.token;
   }
 };
 

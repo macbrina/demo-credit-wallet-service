@@ -5,14 +5,14 @@ import UserController from "@/controllers/userController";
 const router = Router();
 
 router.post(
-  "/register-user",
+  "/register",
   async (req: Request, res: Response, next: NextFunction) => {
     await UserController.createUser(req, res, next);
   }
 );
 
 router.post(
-  "/login-user",
+  "/login",
   async (req: Request, res: Response, next: NextFunction) => {
     await UserController.loginUser(req, res, next);
   }

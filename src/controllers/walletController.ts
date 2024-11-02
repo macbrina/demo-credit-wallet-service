@@ -26,7 +26,10 @@ class WalletController {
         return next(new CustomError("User wallet not found", 404));
       }
 
-      res.status(200).json({ balance: userWalletInfo.balance });
+      res.status(200).json({
+        message: "Balance retrieved successfully.",
+        data: { balance: userWalletInfo.balance },
+      });
     } catch (error) {
       this.handleError(error, next);
     }
@@ -146,16 +149,18 @@ class WalletController {
 
           res.status(200).json({
             message: `Your transfer of N${walletData.amount} was successful! Your new balance is N${updatedWallet.balance}.`,
-            recipient_wallet_id: recipientWalletInfo.wallet_id,
-            sender_wallet_id: senderWalletInfo.wallet_id,
-            sender_name: senderWalletInfo.name,
-            recipient_name: recipientWalletInfo.name,
-            available_balance: updatedWallet.balance,
-            transaction_amount: walletData.amount,
-            transaction_id: transactionData.transaction_id,
-            transaction_type: transactionData.transaction_type,
-            transaction_date: format(createdAtDate, "yyyy-MM-dd HH:mm:ss"),
-            transactiion_status: transactionData.status,
+            data: {
+              recipient_wallet_id: recipientWalletInfo.wallet_id,
+              sender_wallet_id: senderWalletInfo.wallet_id,
+              sender_name: senderWalletInfo.name,
+              recipient_name: recipientWalletInfo.name,
+              available_balance: updatedWallet.balance,
+              transaction_amount: walletData.amount,
+              transaction_id: transactionData.transaction_id,
+              transaction_type: transactionData.transaction_type,
+              transaction_date: format(createdAtDate, "yyyy-MM-dd HH:mm:ss"),
+              transaction_status: transactionData.status,
+            },
           });
         } else {
           res.status(400).json({ message: "Wallet update failed." });
@@ -330,13 +335,15 @@ class WalletController {
 
     return {
       message,
-      wallet_id: walletId,
-      available_balance: balance,
-      transaction_amount: walletData.amount,
-      transaction_id: transactionData.transaction_id,
-      transaction_type: transactionData.transaction_type,
-      transaction_date: format(createdAtDate, "yyyy-MM-dd HH:mm:ss"),
-      transactiion_status: transactionData.status,
+      data: {
+        wallet_id: walletId,
+        available_balance: balance,
+        transaction_amount: walletData.amount,
+        transaction_id: transactionData.transaction_id,
+        transaction_type: transactionData.transaction_type,
+        transaction_date: format(createdAtDate, "yyyy-MM-dd HH:mm:ss"),
+        transaction_status: transactionData.status,
+      },
     };
   }
 

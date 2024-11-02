@@ -77,6 +77,16 @@ class User {
       throw new Error("Failed to find user by email.");
     }
   }
+
+  static async deleteUser(email: string): Promise<boolean> {
+    try {
+      const result = await db("users").where({ email }).del();
+
+      return result > 0;
+    } catch (error) {
+      throw new Error("Could not delete user");
+    }
+  }
 }
 
 export default User;

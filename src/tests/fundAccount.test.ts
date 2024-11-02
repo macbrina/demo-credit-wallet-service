@@ -25,7 +25,7 @@ describe("Fund Account", () => {
       .send(fundData);
 
     expect(response.status).toBe(200);
-    expect(response.body.transaction_amount).toBe(50);
+    expect(response.body.data.transaction_amount).toBe(50);
   });
 
   it("should fail if the amount is invalid", async () => {

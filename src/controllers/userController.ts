@@ -53,7 +53,7 @@ class UserController {
         await UserWallet.createUserWallet(newWallet, trx);
         res
           .status(201)
-          .json({ message: "User created successfully", walletId: walletId });
+          .json({ message: "User created successfully", data: { walletId } });
       });
     } catch (error) {
       return this.handleError(error, next);
@@ -72,17 +72,17 @@ class UserController {
     try {
       let userKarma;
 
-      // if (userData?.identity) {
-      //   userKarma = await checkUserKarma(userData.identity); // For testing purposes
-      // } else {
-      //   userKarma = await checkUserKarma(userData.email);
-      // }
+      if (userData?.identity) {
+        userKarma = await checkUserKarma(userData.identity); // For testing purposes
+      } else {
+        userKarma = await checkUserKarma(userData.email);
+      }
 
-      // if (userKarma) {
-      //   return next(
-      //     new CustomError("Access denied: Insufficient karma score", 403)
-      //   );
-      // }
+      if (userKarma) {
+        return next(
+          new CustomError("Access denied: Insufficient karma score", 403)
+        );
+      }
 
       const existingUser = await User.findUserByEmail(userData.email);
       if (!existingUser) {
@@ -103,7 +103,10 @@ class UserController {
         process.env.JWT_SECRET_KEY!,
         { expiresIn: "1h" }
       );
-      return res.status(200).json({ token });
+      return res.status(200).json({
+        message: "Login successful. Token generated.",
+        data: { token },
+      });
     } catch (error) {
       return this.handleError(error, next);
     }

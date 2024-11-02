@@ -14,10 +14,17 @@ export const userSignupSchema = Joi.object({
     "string.length": "Wallet PIN must be exactly 4 digits",
     "string.pattern.base": "Wallet PIN must be a number",
   }),
-  phone_number: Joi.string().length(14).required().messages({
-    "any.required": "Phone number is required",
-    "string.length": "Phone number must be exactly 15 characters",
-  }),
+  phone_number: Joi.string()
+    .pattern(/^\d+$/)
+    .min(10)
+    .max(15)
+    .required()
+    .messages({
+      "any.required": "Phone number is required",
+      "string.pattern.base": "Phone number must contain only digits",
+      "string.min": "Phone number must be at least 10 digits",
+      "string.max": "Phone number cannot exceed 15 digits",
+    }),
   password: Joi.string()
     .min(8)
     .pattern(/[A-Z]/, "uppercase")
@@ -51,11 +58,11 @@ export const userWalletSchema = Joi.object({
     "any.required": "Wallet ID is required",
     "number.base": "Wallet ID must be a number",
   }),
-  amount: Joi.number().min(1).max(1000000).required().messages({
+  amount: Joi.number().min(10).max(1000000).required().messages({
     "any.required": "Amount is required",
     "number.base": "Amount must be a number",
-    "number.min": "Amount must be at least N1",
-    "number.max": "Amount must not exceed N1,000,000",
+    "number.min": "Amount must be at least 10",
+    "number.max": "Amount must not exceed 1,000,000",
   }),
   wallet_pin: Joi.string().length(4).pattern(/^\d+$/).required().messages({
     "any.required": "Wallet PIN is required",
