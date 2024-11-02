@@ -1,10 +1,6 @@
-export const walletId: number = 4066942538; // Replace wallet_id with actual ID
-export const transactionId: string = "TXN622614139544293"; // Replace transaction_id with actual
-export const walletPin: string = "1234"; // Provide the correct wallet pin
 export const negativeAmount: number = -50; // Negative amount to test invalid input
 export const higherAmount = 10000; // Specify an amount greater than the available balance
 export const withdrawAmount: number = 50; // Specify the amount you wish to withdraw
 export const transferAmount: number = 20; // Specify the amount you wish to transfer
 export const depositAmount: number = 50; // Specify the amount you wish to deposit
-export const recipientWalletId: number = 3732980418; // Provide the recipient wallet ID
 export const nonExistentWalletId: number = 9999999999; // Provide a non-existent recipient wallet ID

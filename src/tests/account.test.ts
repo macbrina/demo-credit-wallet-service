@@ -1,12 +1,14 @@
 import app from "@/index";
 import request from "supertest";
-import User from "@/models/userModel";
 import { closeServer, startServer } from "./testSetup";
+import { deleteTestUser } from "./userTestUtils";
 
-const generateUniqueEmail = () => `testuser_${Date.now()}@gmail.com`;
+const generateUniqueEmail = () =>
+  `testuser_${Date.now()}_${Math.floor(Math.random() * 100000)}@gmail.com`;
 
-let testUserEmail = generateUniqueEmail();
-let testUserData = {
+const testUserEmail: string = generateUniqueEmail();
+
+const testUserData = {
   email: testUserEmail,
   name: "Test User",
   phone_number: "2348033449323",
@@ -16,10 +18,10 @@ let testUserData = {
 
 beforeAll(async () => {
   await startServer();
-});
+}, 15000);
 
 afterAll(async () => {
-  await User.deleteUser(testUserEmail);
+  await deleteTestUser(testUserEmail);
   await closeServer();
 });
 
@@ -63,7 +65,7 @@ describe("User Account Creation", () => {
 describe("User Account Login", () => {
   it("should log into account successfully", async () => {
     const userData = {
-      email: testUserEmail,
+      email: testUserData.email,
       password: "@TestUser12345",
     };
 
