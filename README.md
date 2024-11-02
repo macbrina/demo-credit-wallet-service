@@ -83,7 +83,7 @@ This project is a backend service for a mobile lending application that provides
 To start the application, ensure your database is running, and execute the following command in your project directory:
 
 ```bash
-   npm run dev
+npm run dev
 ```
 
 This will start the server on the specified port (default is 3000). You can use Postman or other API testing tools to interact with the endpoints. Please refer to the API documentation for detailed information. The TypeScript files are compiled into the dist folder, which can be customized in the tsconfig.json file.
@@ -95,7 +95,7 @@ To ensure the integrity of your codebase, this project uses Jest for unit testin
 1. Ensure Jest is Installed: Jest should be included in your package.json. If it's not, you can add it by running:
 
    ```bash
-      npm install --save-dev jest @types/jest ts-jest supertest
+   npm install --save-dev jest @types/jest ts-jest supertest
    ```
 
 2. Run the Tests: You can run the unit tests by executing:

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/index.js",
+    "start": "node src/dist/index.js",
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "test": "jest --verbose",
@@ -21,7 +21,10 @@
       "knexfile.ts",
       "db.ts"
     ],
-    "exec": "tsc && node ./dist/src/index.js",
+    "ignore": [
+      "src/dist/*"
+    ],
+    "exec": "tsc && node ./src/dist/src/index.js",
     "ext": "ts,js,json"
   },
   "devDependencies": {
@@ -56,6 +59,6 @@
     "winston": "^3.15.0"
   },
   "_moduleAliases": {
-    "@": "./dist/src"
+    "@": "./src/dist/src"
   }
 }
