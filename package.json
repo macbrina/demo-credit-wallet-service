@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node src/dist/src/index.js",
     "dev": "nodemon src/index.ts",
-    "build": "tsc",
+    "build": "tsc && cpx src/public/**/* src/dist/src/public",
     "test": "jest --verbose",
     "knex:migrate": "ts-node ./node_modules/knex/bin/cli.js migrate:latest --knexfile=knexfile.ts",
     "knex:migrate:rollback": "ts-node ./node_modules/knex/bin/cli.js migrate:rollback --knexfile=knexfile.ts",
@@ -48,6 +48,7 @@
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
+    "cpx": "^1.5.0",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
